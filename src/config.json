@@ -1,0 +1,12 @@
+{
+    "31337": {
+        "nft": {
+            "address": ""
+        }
+    },
+    "goerli": {
+        "nft": {
+            "address": "0xDbbb1E23113221785fbf747e8E075CC5C050731b"
+        }
+    }
+}
