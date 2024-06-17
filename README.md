@@ -1,6 +1,6 @@
 # AI NFT Generator
 
-###- Paint a picture with your words and let the AI do the rest.
+### Paint a picture with your words and let the AI do the rest.
 
 - Step 1: Write a prompt
 - Step 2: AI will generate an image preview based on your prompt
@@ -38,7 +38,8 @@ Before running any scripts, you'll want to create a .env file with the following
 - **REACT_APP_HUGGING_FACE_API_KEY=""**
 - **REACT_APP_NFT_STORAGE_API_KEY=""**
 - **ALCHEMY_API_KEY=""** - for fetching the NFTs of this collection
-- **ALCHEMY_API_KEY_GOERLI=""** - for fetching the NFTs of this collection
+- **ALCHEMY_API_KEY_GOERLI=""** - for fetching the NFTs of the goerli collection
+- **ALCHEMY_API_KEY_SEPOLIA=""** - for fetching the NFTs of the sepolia collection
 
 You'll need to create an account on [Hugging Face](https://huggingface.co/), visit your profile settings, and create a read access token.
 
