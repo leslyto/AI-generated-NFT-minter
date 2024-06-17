@@ -69,15 +69,16 @@ function App() {
 
   return (
     <div>
-      {chainId !== 5 && (
-        <Banner
-          message={
-            errorMessage
-              ? errorMessage
-              : 'Currently the site only works on Goerli testnet. Please switch to Goerli to mint and view NFTs from the collection.'
-          }
-        />
-      )}
+      {chainId !== 5 ||
+        (chainId !== 11155111 && (
+          <Banner
+            message={
+              errorMessage
+                ? errorMessage
+                : 'Currently the site only works on Goerli and Sepolia testnets. Please switch to Goerli or Sepolia to mint and view NFTs from the collection.'
+            }
+          />
+        ))}
       <Navigation />
       <div className="flex justify-center items-center min-h-150 flex-col md:flex-row">
         <div className="flex flex-col justify-center items-start m-6">
@@ -123,7 +124,9 @@ function App() {
           {txnHash && (
             <a
               className="w-80 h-12 m-2 p-2 flex items-center justify-center bg-gray-800 text-white rounded-md font-medium cursor-pointer transition-all ease-in-out duration-200 hover:bg-gray-600"
-              href={`https://goerli.etherscan.io/tx/${txnHash}`}
+              href={`https://${
+                chainId === 11155111 ? 'sepolia' : 'goerli'
+              }.etherscan.io/tx/${txnHash}`}
               target="_blank"
               rel="noreferrer"
             >
@@ -143,8 +146,8 @@ function App() {
 
           {isWaiting && (
             <div className="flex justify-center items-center">
-              {/* Add spinner animation */}
               <p className="m-2 text-white">{message}</p>
+              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-white"></div>
             </div>
           )}
         </div>

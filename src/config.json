@@ -8,5 +8,10 @@
         "nft": {
             "address": "0xDbbb1E23113221785fbf747e8E075CC5C050731b"
         }
+    },
+    "sepolia": {
+        "nft": {
+            "address": "0x31B179aD7A38361a29761E61519DD2F6d39B20B2"
+        }
     }
 }

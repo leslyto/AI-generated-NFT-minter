@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { ethers } from 'ethers';
 import ABI from '../abis/ABI.json';
 import config from '../config.json';
@@ -11,67 +11,82 @@ const useEthereum = (setErrorMessage) => {
   const [account, setAccount] = useState(null);
 
   const requestAccount = async () => {
-    const accounts = await window.ethereum.request({
-      method: 'eth_requestAccounts',
-    });
-    setAccount(accounts[0]);
+    try {
+      const accounts = await window.ethereum.request({
+        method: 'eth_requestAccounts',
+      });
+      setAccount(accounts[0]);
+    } catch (error) {
+      setErrorMessage('Failed to connect to Metamask.');
+      console.error('Failed to connect to Metamask: ', error);
+    }
   };
 
-  const setupEthereumEnvironment = async () => {
+  const setupEthereumEnvironment = useCallback(async () => {
     if (window.ethereum) {
       try {
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
-        setProvider(provider);
-        const signer = provider.getSigner();
-        const account = await signer.getAddress();
-        setAccount(account);
-        const network = await provider.getNetwork();
+        const web3Provider = new ethers.providers.Web3Provider(window.ethereum);
+        setProvider(web3Provider);
+
+        const signer = web3Provider.getSigner();
+        const userAccount = await signer.getAddress();
+        setAccount(userAccount);
+
+        const network = await web3Provider.getNetwork();
         setChainId(network.chainId);
-        const contractAddress = config[network.name].nft.address;
-        setContractAddress(contractAddress);
-        const contract = new ethers.Contract(contractAddress, ABI, provider);
-        setContract(contract);
+
+        const networkConfig = config[network.name];
+        if (networkConfig && networkConfig.nft && networkConfig.nft.address) {
+          const address = networkConfig.nft.address;
+          setContractAddress(address);
+          const ethersContract = new ethers.Contract(address, ABI, signer);
+          setContract(ethersContract);
+        } else {
+          setErrorMessage(
+            `No contract address found for network: ${network.name}`,
+          );
+        }
       } catch (error) {
+        setErrorMessage('Failed to load Ethereum data.');
         console.error('Failed to load Ethereum data: ', error);
       }
     } else {
       setErrorMessage(
-        'Please Install Metamask in order to view the site and mint AI generated pictures.',
+        'Please install Metamask to view the site and mint AI-generated pictures.',
       );
       console.log('Ethereum object not found. Install Metamask.');
-      return;
     }
-  };
+  }, [setErrorMessage]);
 
   useEffect(() => {
     if (!setErrorMessage) return;
     setupEthereumEnvironment();
 
     if (window.ethereum) {
-      window.ethereum.on('accountsChanged', async function (accounts) {
+      const handleAccountsChanged = (accounts) => {
         setAccount(accounts[0]);
         window.location.reload();
-      });
+      };
 
-      window.ethereum.on('chainChanged', async function (_chainId) {
-        setChainId(_chainId);
+      const handleChainChanged = (_chainId) => {
+        setChainId(parseInt(_chainId, 10));
         window.location.reload();
-      });
+      };
+
+      window.ethereum.on('accountsChanged', handleAccountsChanged);
+      window.ethereum.on('chainChanged', handleChainChanged);
 
       return () => {
         if (window.ethereum.removeListener) {
           window.ethereum.removeListener(
             'accountsChanged',
-            setupEthereumEnvironment,
+            handleAccountsChanged,
           );
-          window.ethereum.removeListener(
-            'chainChanged',
-            setupEthereumEnvironment,
-          );
+          window.ethereum.removeListener('chainChanged', handleChainChanged);
         }
       };
     }
-  }, [setErrorMessage]);
+  }, [setErrorMessage, setupEthereumEnvironment]);
 
   return {
     provider,

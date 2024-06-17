@@ -2,17 +2,31 @@ import React, { useState } from 'react';
 
 const NFTGrid = ({ contractNFTs, contractAddress, chainId }) => {
   const [hoveredNFT, setHoveredNFT] = useState(null);
+
   if (!contractNFTs) {
     return null;
   }
 
   const openOpenSeaUrl = (tokenId) => {
-    const openseaUrl = `https://${
-      chainId !== 1 ? 'testnets.' : ''
-    }opensea.io/assets/${
-      chainId === 5 ? 'goerli/' : ''
-    }${contractAddress}/${tokenId}`;
+    const isMainnet = chainId === 1;
+    const subdomain = !isMainnet ? 'testnets.' : '';
+    const networkPath =
+      chainId === 5 ? 'goerli/' : chainId === 11155111 ? 'sepolia/' : '';
+    const openseaUrl = `https://${subdomain}opensea.io/assets/${networkPath}${contractAddress}/${tokenId}`;
+    console.log('openseaUrl', openseaUrl);
     window.open(openseaUrl, '_blank');
+  };
+
+  const getMediaUrl = (media) => {
+    const IPFS_GATEWAY = 'https://w3s.link/ipfs/';
+
+    if (media.thumbnail) {
+      return media.thumbnail;
+    }
+    if (media.raw) {
+      return `${IPFS_GATEWAY}${media.raw.split('ipfs://')[1]}`;
+    }
+    return media.gateway; // Fallback to gateway if raw is not available
   };
 
   const handleMouseEnter = (index) => {
@@ -38,7 +52,7 @@ const NFTGrid = ({ contractNFTs, contractAddress, chainId }) => {
           >
             {nft.media && (
               <img
-                src={nft.media[0].thumbnail}
+                src={getMediaUrl(nft.media[0])}
                 alt={nft.title}
                 className="w-full h-auto cursor-pointer"
                 onClick={() => openOpenSeaUrl(nft.tokenId)}
